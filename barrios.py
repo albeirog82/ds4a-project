@@ -24,7 +24,7 @@ layout = dict(mapbox = dict(layers = [], accesstoken = token, style = 'light', c
 
 geo_layer = dict(
 	sourcetype = 'geojson',
-	source = 'https://raw.githubusercontent.com/albeirog82/ds4a-project/master/0-2.geojson',
+	source = 'https://case-5-1-ag.s3.us-east-2.amazonaws.com/0-2.geojson',
 	type = 'fill', 
 	color = "#80d482",
 	opacity = 0.8)
