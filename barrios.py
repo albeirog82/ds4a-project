@@ -17,14 +17,14 @@ token = 'pk.eyJ1IjoibmV3dXNlcmZvcmV2ZXIiLCJhIjoiY2o2M3d1dTZiMGZobzMzbnp2Z2NiN3lm
 df_lat_lon = pd.read_csv('mockdata.csv')
 
 data = [dict(lat = df_lat_lon['latitude'],lon = df_lat_lon['longitude'], text = df_lat_lon['text'], type = 'scattermapbox')]
-layout = dict(mapbox = dict(layers = [], accesstoken = token, style = 'light', center=dict(lat=4.6918154,lon=-74.0765448), pitch=0, zoom=0.5))
+layout = dict(mapbox = dict(layers = [], accesstoken = token, style = 'light', center=dict(lat=4.6918154,lon=-74.0765448), pitch=0, zoom=4.5))
 #layout = dict(mapbox = dict(layers = dict(sourcetype = 'geojson',source = 'barrios_clock.geojson',type = 'fill',color = "#80d482",opacity = 0.8), accesstoken = token, style = 'light', center=dict(lat=4.6918154,lon=-74.0765448), pitch=0, zoom=10.5))
 
 #dict(sourcetype = 'geojson',source = 'xbarrios_clock.geojson',type = 'fill',color = "#80d482",opacity = 0.8)
 
 geo_layer = dict(
 	sourcetype = 'geojson',
-	source = 'https://raw.githubusercontent.com/albeirog82/ds4a-project/master/neigh_001.geojson',
+	source = 'https://raw.githubusercontent.com/albeirog82/ds4a-project/master/neigh.geojson',
 	type = 'fill', 
 	color = "#80d482",
 	opacity = 0.8)
