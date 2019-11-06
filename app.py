@@ -7,7 +7,7 @@ import dash_table
 
 
 df = pd.read_csv('aggr.csv', parse_dates=['Entry time'])
-df['YearMonth'] = df['Entry time'].map(lambda x: x.strftime('%Y%m'))
+df['YearMonth'] = pd.to_datetime(df['Entry time'], format='%Y%m')
 
 print(df.head())
 
@@ -155,16 +155,34 @@ app.layout = html.Div(children=[
                             )
                         ]
                     ),
-                    dcc.Graph(
-                        id="pnl-types",
+                    html.Div(
                         className="six columns card",
-                        figure={
-                            'data': []
-                        }
-
+                        children=[
+                            dcc.Graph(
+                                id="pnl-types",
+                                figure={
+                                    'data': []
+                                }
+                            )
+                        ]
                     )
                 ]
-            ),
+        ),
+        html.Div(
+                className="padding row",
+                children=[
+                    dcc.Graph(
+                        id="daily-btc",
+                        className="six columns card",
+                        figure={}
+                    ),
+                    dcc.Graph(
+                        id="balance",
+                        className="six columns card",
+                        figure={}
+                    )
+                ]
+        )
     ])
 ])
 
@@ -230,12 +248,8 @@ def calc_strat_returns(dff):
     )
 )
 def update_monthly(exchange, leverage, start_date, end_date):
-    print("Updating parameters")
     dff = filter_df(df, exchange, leverage, start_date, end_date)
-    print(dff.head())
     data = calc_returns_over_month(dff)
-    print("data")
-    print(data)
     btc_returns = calc_btc_returns(dff)
     strat_returns = calc_strat_returns(dff)
     strat_vs_market = strat_returns - btc_returns
@@ -282,19 +296,19 @@ def update_table(exchange, leverage, start_date, end_date):
 )
 def update_pnl_types(exchange, leverage, start_date, end_date):
     dff = filter_df(df, exchange, leverage, start_date, end_date)
-    years = ['2016', '2017', '2018']
+
+    gp_tradetype = dff.groupby('Trade type')
+
+    data = []
+
+    for name, group in gp_tradetype:
+        data.append(
+            go.Bar(x=group['YearMonth'], y=group['Pnl (incl fees)'],
+                   name=name)
+        )
+
     return {
-               'data': [
-                   go.Bar(x=years, y=[500, 600, 700],
-                base=[-500,-600,-700],
-                marker_color='crimson',
-                name='expenses'),
-                   go.Bar(x=years, y=[300, 400, 700],
-                          base=0,
-                          marker_color='lightslategrey',
-                          name='revenue'
-                          )
-               ]
+               'data': data
            }
 
 
