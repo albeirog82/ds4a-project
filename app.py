@@ -3,11 +3,10 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
+import dash_table
+
 
 df = pd.read_csv('aggr.csv', parse_dates=['Entry time'])
-#df['year'] = pd.DatetimeIndex(df['Entry time']).year
-#df['month'] = pd.DatetimeIndex(df['Entry time']).month
-#df['YearMonth'] = pd.to_datetime(df['Entry time']).dt.to_period('M')
 df['YearMonth'] = df['Entry time'].map(lambda x: x.strftime('%Y%m'))
 
 print(df.head())
@@ -21,6 +20,21 @@ def filter_df(df, exchange, margin, start_date, end_date):
     filtered_df = filtered_df[filtered_df['Entry time']>=start_date]
     filtered_df = filtered_df[filtered_df['Entry time']<=end_date]
     return filtered_df
+
+
+def group_pnl_types(filtered_df):
+    data = []
+    x_yearmonth = filtered_df['YearMonth'].tolist()
+    y_tradetype = filtered_df['YearMonth'].tolist()
+    #for name, group in df.groupby('Trade type'):
+    #    grouped = group.groupby('Trade type', as_index=False).count()
+    #    data.append(
+    #        go.Bar(y=grouped['Profit'], x=grouped['YearMonth'], name=name, orientation='h')
+    #    )
+    data.append(
+            go.Bar(y=y_tradetype, x=x_yearmonth)
+        )
+    return data
 
 app.layout = html.Div(children=[
     html.Div(
@@ -117,6 +131,40 @@ app.layout = html.Div(children=[
                 )
             ]
         ),
+        html.Div(
+                className="padding row",
+                children=[
+                    html.Div(
+                        className="six columns card",
+                        children=[
+                            dash_table.DataTable(
+                                id='table',
+                                columns=[
+                                    {'name': 'Number', 'id': 'Number'},
+                                    {'name': 'Trade type', 'id': 'Trade type'},
+                                    {'name': 'Exposure', 'id': 'Exposure'},
+                                    {'name': 'Entry balance', 'id': 'Entry balance'},
+                                    {'name': 'Exit balance', 'id': 'Exit balance'},
+                                    {'name': 'Pnl (incl fees)', 'id': 'Pnl (incl fees)'},
+                                ],
+                                style_cell={'width': '50px'},
+                                style_table={
+                                    'maxHeight': '450px',
+                                    'overflowY': 'scroll'
+                                },
+                            )
+                        ]
+                    ),
+                    dcc.Graph(
+                        id="pnl-types",
+                        className="six columns card",
+                        figure={
+                            'data': []
+                        }
+
+                    )
+                ]
+            ),
     ])
 ])
 
@@ -206,6 +254,50 @@ def update_monthly(exchange, leverage, start_date, end_date):
                    'title': 'Overview of Monthly performance'
                }
            }, f'{btc_returns:0.2f}%', f'{strat_returns:0.2f}%', f'{strat_vs_market:0.2f}%'
+
+
+@app.callback(
+    dash.dependencies.Output('table', 'data'),
+    (
+        dash.dependencies.Input('exchange-select', 'value'),
+        dash.dependencies.Input('leverage-select', 'value'),
+        dash.dependencies.Input('date-range', 'start_date'),
+        dash.dependencies.Input('date-range', 'end_date'),
+    )
+)
+def update_table(exchange, leverage, start_date, end_date):
+    dff = filter_df(df, exchange, leverage, start_date, end_date)
+    return dff.to_dict('records')
+
+
+@app.callback(
+    dash.dependencies.Output('pnl-types', 'figure'),
+    [
+            dash.dependencies.Input('exchange-select', 'value'),
+            dash.dependencies.Input('leverage-select', 'value'),
+            dash.dependencies.Input('date-range', 'start_date'),
+            dash.dependencies.Input('date-range', 'end_date'),
+
+    ]
+)
+def update_pnl_types(exchange, leverage, start_date, end_date):
+    dff = filter_df(df, exchange, leverage, start_date, end_date)
+    years = ['2016', '2017', '2018']
+    return {
+               'data': [
+                   go.Bar(x=years, y=[500, 600, 700],
+                base=[-500,-600,-700],
+                marker_color='crimson',
+                name='expenses'),
+                   go.Bar(x=years, y=[300, 400, 700],
+                          base=0,
+                          marker_color='lightslategrey',
+                          name='revenue'
+                          )
+               ]
+           }
+
+
 
 if __name__ == "__main__":
     app.run_server(debug=True)
