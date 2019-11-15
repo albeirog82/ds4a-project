@@ -22,32 +22,93 @@ neighs_data = pd.read_csv('neigh_data.csv', dtype={'id': object})
 
 print(neighs_data.head())
 
-app.layout = html.Div(children=[
-    html.Div(
+app.layout = html.Div([
+	html.Div(
         children=[
             html.H2(children="Bogota", className='h2-title'),
         ],
         className='study-browser-banner row'
     ),
-    dcc.Graph(
-        id = 'bogota-choropleth', 
-		figure={ 
-                'data': [go.Choroplethmapbox(
-					geojson=geojson,
-                    locations=neighs_data['id'],
-					text=neighs_data['neighborhood'],
-					z=neighs_data['value'],
-                    colorscale='Viridis',
-                    colorbar_title="Values"
-                )],
-                'layout': go.Layout(
-                        mapbox_style="light",
-                        mapbox_accesstoken=token,
-                        mapbox_zoom=9,
-                        mapbox_center = {"lat": 4.6918154, "lon": -74.0765448}
+    dcc.Tabs(id="tabs", children=[
+        dcc.Tab(label='Main', children=[
+            html.Div([
+				dcc.Graph(
+					id = 'bogota-choropleth', 
+					figure={ 
+							'data': [go.Choroplethmapbox(
+								geojson=geojson,
+								locations=neighs_data['id'],
+								text=neighs_data['neighborhood'],
+								z=neighs_data['value'],
+								colorscale='Viridis',
+								colorbar_title="Values"
+							)],
+							'layout': go.Layout(
+									mapbox_style="light",
+									mapbox_accesstoken=token,
+									mapbox_zoom=9,
+									mapbox_center = {"lat": 4.6918154, "lon": -74.0765448}
+							)
+					}
+				)
+            ])
+        ]),
+        dcc.Tab(label='Index calculation', children=[
+                dcc.Graph(
+                    id='example-graph-1',
+                    figure={
+                        'data': [
+                            {'x': [1, 2, 3], 'y': [1, 4, 1],
+                                'type': 'bar', 'name': 'SF'},
+                            {'x': [1, 2, 3], 'y': [1, 2, 3],
+                             'type': 'bar', 'name': u'Montréal'},
+                        ]
+                    }
                 )
-        }
-    )
+        ]),
+        dcc.Tab(label='Neighborhood Review', children=[
+                dcc.Graph(
+                    id='example-graph-2',
+                    figure={
+                        'data': [
+                            {'x': [1, 2, 3], 'y': [2, 4, 3],
+                                'type': 'bar', 'name': 'SF'},
+                            {'x': [1, 2, 3], 'y': [5, 4, 3],
+                             'type': 'bar', 'name': u'Montréal'},
+                        ]
+                    }
+                )
+        ]),
+		dcc.Tab(label='Compare', children=[
+				dcc.Dropdown(
+					options=[
+						{'label': 'New York City', 'value': 'NYC'},
+						{'label': 'Montréal', 'value': 'MTL'},
+						{'label': 'San Francisco', 'value': 'SF'}
+					],
+					value='MTL'
+				),  
+				dcc.Dropdown(
+					options=[
+						{'label': 'New York City', 'value': 'NYC'},
+						{'label': 'Montréal', 'value': 'MTL'},
+						{'label': 'San Francisco', 'value': 'SF'}
+					],
+					value='MTL'
+				), 				
+                dcc.Graph(
+                    id='example-graph-3',
+                    figure={
+                        'data': [
+                            {'x': [1, 2, 3], 'y': [2, 4, 3],
+                                'type': 'bar', 'name': 'SF'},
+                            {'x': [1, 2, 3], 'y': [5, 4, 3],
+                             'type': 'bar', 'name': u'Montréal'},
+                        ]
+                    }
+                )
+        ]),
+    ])
 ])
 
 #@app.callback(
